@@ -2,3 +2,10 @@
 .Rhistory
 .RData
 .Ruserdata
+*.o
+*.dll
+*.*
+!*.R
+!*.Rd
+!*.c
+!*.h

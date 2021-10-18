@@ -1,0 +1,8 @@
+a <- sample_fixed_TRUE(10L, 4L)
+expect_equal(sum(a), 4)
+a <- sample_fixed_TRUE(10L, 10L)
+expect_equal(sum(a), 10L)
+a <- sample_fixed_TRUE(10L, 0L)
+expect_equal(sum(a), 0)
+a <- sample_fixed_TRUE(16L, 3L)
+expect_equal(sum(a), 3L)
