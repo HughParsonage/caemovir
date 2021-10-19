@@ -65,7 +65,6 @@ void csample_fixed_TRUE(unsigned char * xp, unsigned int n, unsigned int nTRUE) 
     ucswap(&xp[i], &xp[j]);
   }
 
-
 }
 
 SEXP C_sample_fixed_TRUE(SEXP nn, SEXP nnTRUE) {

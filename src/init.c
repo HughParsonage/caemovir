@@ -13,6 +13,7 @@ extern SEXP C_extract_SEIR(SEXP, SEXP);
 extern SEXP C_prepare_SEIR(SEXP, SEXP, SEXP);
 extern SEXP C_sample_fixed_TRUE(SEXP, SEXP);
 extern SEXP C_SEIR(SEXP, SEXP);
+extern SEXP C_trand_pcg(SEXP, SEXP);
 extern SEXP Collapse(SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
@@ -21,6 +22,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"C_prepare_SEIR",      (DL_FUNC) &C_prepare_SEIR,      3},
     {"C_sample_fixed_TRUE", (DL_FUNC) &C_sample_fixed_TRUE, 2},
     {"C_SEIR",              (DL_FUNC) &C_SEIR,              2},
+    {"C_trand_pcg",         (DL_FUNC) &C_trand_pcg,         2},
     {"Collapse",            (DL_FUNC) &Collapse,            1},
     {NULL, NULL, 0}
 };

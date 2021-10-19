@@ -40,6 +40,19 @@ static inline unsigned int max_status_of(Person * P) {
   return P->max_status;
 }
 
+static unsigned int u2max_status(unsigned int r, unsigned int q_kill, unsigned int q_hosp, unsigned int q_symp) {
+  if (r < q_kill) {
+    return STATUS_RESOL_DEAD;
+  }
+  if (r < q_hosp) {
+    return STATUS_INFEC_HOSP;
+  }
+  if (r < q_symp) {
+    return STATUS_INFEC_SYMP;
+  }
+  return STATUS_INFEC_ASYM;
+}
+
 
 void infect_now(Person * P, unsigned char d) {
   P->date = d;
@@ -138,6 +151,10 @@ static void do_1seir(Person * x, unsigned int r, unsigned char d, unsigned int Q
   }
 }
 
+static void do_2seir(Person * x, unsigned int r, unsigned char d) {
+
+}
+
 static void do_seir(int * restrict ansp, unsigned char d, int N, int z, unsigned char * zj) {
   if (z == 0) {
     for (int i = 0; i < N; ++i) {
@@ -209,9 +226,21 @@ SEXP C_prepare_SEIR(SEXP nn, SEXP nn_infected, SEXP nn_vacc) {
   const int n_vacc = asInteger(nn_vacc);
   SEXP ans = PROTECT(allocVector(INTSXP, n));
   int * restrict ansp = INTEGER(ans);
+
+  const double p_kill = 0.01;
+  const double p_hosp = 0.03;
+  const double p_symp = 0.20;
+
+  const unsigned int q_kill = UINT_MAX * p_kill;
+  const unsigned int q_hosp = UINT_MAX * p_hosp;
+  const unsigned int q_symp = UINT_MAX * p_symp;
+
+
   for (int i = 0; i < n; ++i) {
     Person P;
     P.date = 255;
+    P.max_status = u2max_status(rand_pcg(), q_kill, q_hosp, q_symp);
+
     if (i < n_infected) {
       P.status = STATUS_INFEC_ASYM;
       P.date = 0;

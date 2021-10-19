@@ -18,6 +18,9 @@ int maxiy(const int * x, int n, int y);
 
 unsigned int rand_pcg();
 
+// ScalarLength.c
+SEXP ScalarLength(R_xlen_t N);
+R_xlen_t asLength(SEXP NN);
 
 // sample.c
 void csample_fixed_TRUE(unsigned char * xp, unsigned int n, unsigned int nTRUE);

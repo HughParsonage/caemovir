@@ -4,12 +4,16 @@
 \alias{sample_fixed_TRUE}
 \title{Sample to give a fixed number of TRUE values}
 \usage{
-sample_fixed_TRUE(n, nTRUE, m = 0L)
+sample_fixed_TRUE(n, nTRUE)
 }
 \arguments{
 \item{n}{An integer, the length of the output}
 
 \item{nTRUE}{The number of \code{TRUE} values in the result.}
+}
+\value{
+A logical vector of length \code{n} with \code{nTRUE} \code{TRUE}
+elements interspersed randomly throughout.
 }
 \description{
 Sample to give a fixed number of TRUE values
