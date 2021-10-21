@@ -37,10 +37,21 @@ prepare_SEIR <- function(n,
 }
 
 simulate_SEIR <- function(x, ndays = 28L, m = 1L) {
-  .Call("C_SEIR", x, as.integer(ndays), as.integer(m), PACKAGE = packageName())
+  ans <- .Call("C_SEIR", x, as.integer(ndays), as.integer(m), PACKAGE = packageName())
+  data.table(x = x,
+             ans = ans,
+             date = extract_SEIR(ans, 0L),
+             vacc = extract_SEIR(ans, 1L),
+             stat = extract_SEIR(ans, 2L))
 }
+
+
 
 extract_SEIR <- function(x, m = 0L) {
   .Call("C_extract_SEIR", x, m, PACKAGE = packageName())
 }
+
+
+
+
 

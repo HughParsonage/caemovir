@@ -16,13 +16,18 @@
 
 #define ZINFECT 1
 
+#define EVER_SYMP 1
+#define EVER_HOSP 2
+#define EVER_KILL 3
+
+
 typedef struct {
   unsigned int vaccine : 3;
   unsigned int status : 4;
   unsigned int max_status : 4;
   unsigned int transmit_potential : 5;
   unsigned int transmit_day : 3;
-  unsigned int date : 8;
+  unsigned char date;
 } Person;
 
 static inline unsigned char date_infected(Person * P) {
@@ -67,6 +72,10 @@ static void advance_status(Person * P) {
   P->status = o;
 }
 
+bool is_suscep(Person * P) {
+  unsigned int s = P->status;
+  return s == STATUS_SUSCE_UNVA || s == STATUS_SUSCE_VACC;
+}
 
 void infect_now(Person * P, unsigned char d) {
   P->date = d;
@@ -80,14 +89,19 @@ static Person u2P(unsigned int x) {
   Person P;
   P.date = x & 255;
   x >>= 8;
+
   P.transmit_day = x & 7;
   x >>= 3;
+
   P.transmit_potential = x & 31;
   x >>= 5;
+
   P.max_status = x & 15;
   x >>= 4;
+
   P.status = x & 15;
   x >>= 4;
+
   P.vaccine = x & 7;
   return P;
 }
@@ -102,14 +116,19 @@ static unsigned int P2U(Person * P) {
   unsigned int vaccine = P->vaccine;
   unsigned int date = P->date;
   unsigned int o = vaccine;
+
   o <<= 4;
   o += status;
+
   o <<= 4;
   o += max_status;
+
   o <<= 5;
   o += transmit_potential;
+
   o <<= 3;
   o += transmit_day;
+
   o <<= 8;
   o += date;
   return o;
@@ -216,13 +235,13 @@ static void do_seirB(int * restrict ansp, unsigned char d, int N, int z, unsigne
   csample_fixed_TRUE(zj, N, z);
   for (int i = 0; i < N; ++i) {
     Person P = u2P(ansp[i]);
-    if (zj[i]) {
+    if (zj[i] && is_suscep(&P)) {
       P.date = d;
       P.status = STATUS_INFEC_ASYM;
       ansp[i] = P2U(&P);
       return;
     }
-    unsigned int res_date = P.date + P.transmit_day;
+    unsigned int res_date = P.date + 8;
     if (d == res_date) {
       P.status = P.max_status == STATUS_RESOL_DEAD ? STATUS_RESOL_DEAD : STATUS_RESOL_WELL;
     }
@@ -232,13 +251,25 @@ static void do_seirB(int * restrict ansp, unsigned char d, int N, int z, unsigne
 }
 
 
-unsigned int n_seir_infected(int * x, int n) {
+unsigned int n_transmissions(int * x, int n) {
   int o = 0;
   for (int i = 0; i < n; ++i) {
     Person P = u2P(x[i]);
     unsigned int si = status_of(&P);
-    o += si == STATUS_INFEC_ASYM;
-    o += si == STATUS_INFEC_SYMP;
+    // if a person is infected, what day do they transmit?
+    // (we just decrement )
+    if (si == STATUS_INFEC_ASYM || si == STATUS_INFEC_SYMP) {
+      unsigned int td = P.transmit_day - 1;
+
+      if (td == 0) {
+        unsigned int tr = P.transmit_potential;
+        o += tr;
+      }
+      td &= 7;
+      P.transmit_day = td;
+      // must be updated because of td
+      x[i] = P2U(&P);
+    }
   }
   return o;
 }
@@ -267,19 +298,17 @@ SEXP C_SEIR(SEXP x, SEXP Ndays, SEXP M) {
   }
   unsigned char * zj = malloc(sizeof(char) * N);
   for (unsigned char d = 1; d < ndays; ++d) {
-    int n_infected = n_seir_infected(ansp, N);
+    int ntransmissions = n_transmissions(ansp, N);
     switch(m) {
     case 0:
       do_seir0(ansp, N);
     case 1:
-      do_seir(ansp, d, N, n_infected, zj);
+      do_seir(ansp, d, N, ntransmissions, zj);
       break;
     case 2:
-      do_seirB(ansp, d, N, n_infected, zj);
+      do_seirB(ansp, d, N, ntransmissions, zj);
 
     }
-
-
   }
   free(zj);
   UNPROTECT(np);
@@ -367,11 +396,35 @@ SEXP C_extract_SEIR(SEXP x, SEXP mm) {
     case 2:
       o = status_of(&P);
       break;
+    case 3:
+      o = P.max_status;
+      break;
+    case 4:
+      o = P.transmit_day;
+      break;
+    case 5:
+      o = P.transmit_potential;
+      break;
     }
     ansp[i] = o;
   }
   UNPROTECT(1);
   return ans;
 }
+
+
+
+typedef struct {
+  unsigned int vaccine : 3;
+  bool infected : 1;
+  bool exposed : 1;
+  unsigned int ever : 2;
+  unsigned int transmit_potential : 5;
+  unsigned int transmit_day : 3;
+  unsigned int date : 8;
+} Person2;
+
+
+
 
 
