@@ -22,12 +22,22 @@ std_vacc_vs_age <- function(vaccination_by_age) {
   out
 }
 
-prepare_SEIR <- function(n, n_infected = 1L, n_vacc = as.integer(0.9 * n)) {
-  .Call("C_prepare_SEIR", n, n_infected, n_vacc, PACKAGE = packageName())
+prepare_SEIR <- function(n,
+                         n_infected = 1L,
+                         p_max_status = c(p_symp = 0.2, p_hosp = 0.03, p_kill = 0.01),
+                         n_vacc = as.integer(0.9 * n)) {
+  stopifnot(is.double(p_max_status), length(p_max_status) == 3)
+  if (hasNames(p_max_status, c("p_symp", "p_hosp", "p_kill"))) {
+    p_max_status <- as.double(p_max_status[c("p_symp", "p_hosp", "p_kill")])
+  } else {
+    p_max_status <- as.double(p_max_status)
+  }
+  u1 <- pcg32(n)
+  .Call("C_prepare_SEIR", n, n_infected, n_vacc, p_max_status, u1, PACKAGE = packageName())
 }
 
-simulate_SEIR <- function(x, ndays = 28L) {
-  .Call("C_SEIR", x, as.integer(ndays), PACKAGE = packageName())
+simulate_SEIR <- function(x, ndays = 28L, m = 1L) {
+  .Call("C_SEIR", x, as.integer(ndays), as.integer(m), PACKAGE = packageName())
 }
 
 extract_SEIR <- function(x, m = 0L) {
