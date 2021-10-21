@@ -16,7 +16,9 @@
 int isntSorted(const int * x, int n);
 int maxiy(const int * x, int n, int y);
 
+// pcg_hash
 unsigned int rand_pcg();
+void populateRandom_pcg32(int * answer, int size, int state, int inc);
 
 // ScalarLength.c
 SEXP ScalarLength(R_xlen_t N);

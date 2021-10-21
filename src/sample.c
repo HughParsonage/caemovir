@@ -67,6 +67,8 @@ void csample_fixed_TRUE(unsigned char * xp, unsigned int n, unsigned int nTRUE) 
 
 }
 
+
+
 SEXP C_sample_fixed_TRUE(SEXP nn, SEXP nnTRUE) {
   const unsigned int n = asInteger(nn);
   const unsigned int nTRUE = asInteger(nnTRUE);

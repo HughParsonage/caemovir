@@ -3,6 +3,7 @@
 export(collapse)
 export(pcg32)
 export(sample_fixed_TRUE)
+export(simulate_SEIR)
 export(simulate_vic)
 import(data.table)
 importFrom(utils,packageName)

@@ -1,54 +1,53 @@
+#' SEIR simulations
+#' @param R The average number of additional people an infected person will infect
+#' in an unvaccinated society.
+#' @param n_days Number of days to simulate (must be less than 255).
+#' @param n_population Size of the modelled population.
+#' @param n_infected Size of the infected population.
+#' @param n_vaccinated A vector of length \code{n_days}, the number of people
+#' vacccinated for each day.
+#' @param n_external_infections A vector of length \code{n_days}, the
+#' number of sporadic infections to introduce.
+#' @param p_symp,p_hosp,p_icu,p_death The proportion of infected individuals
+#' who develop symptoms, enter hospital, icu, or die.
+#'
+#' @export
 
-
-simulate_reff <- function(R = 4.5,
-                          R_dist = "dirac",
-                          vaccination_by_age = c(0, 0.2, 0.4, 0.5, 0.6, 0.7, 0.9, 0.95)) {
-  v_vs_age <- std_vacc_vs_age(vaccination_by_age)
-}
-
-std_vacc_vs_age <- function(vaccination_by_age) {
-  if (is.atomic(vaccination_by_age)) {
-
-    if (!is.numeric(vaccination_by_age)) {
-      stop("`vaccination_by_age` was not numeric.")
-    }
-    if (length(vaccination_by_age) == 100) {
-      return(vaccination_by_age)
-    }
-    out <- approx(vaccination_by_age, n = 100)[["y"]]
-  } else {
-
+simulate_SEIR <- function(R = 5.5, n_days = 28L, n_population = 5e6L, n_infected = 1000L,
+                          n_vaccinated = NULL,
+                          n_external_infections = NULL,
+                          p_symp = 0.2,
+                          p_hosp = 0.05,
+                          p_icu = 0.02,
+                          p_death = 0.01) {
+  Epi <- c(p_symp, p_hosp, p_icu, p_death)
+  Sizes <- c(n_population, n_infected, n_days)
+  stopifnot(is.integer(n_days), length(n_days) == 1L, !is.na(n_days), n_days < 255L)
+  if (is.null(n_vaccinated)) {
+    n_vaccinated <- as.integer(stats::approx(c(1L, n_days), y = c(0.7, 0.95), n = n_days)[["y"]])
   }
-  out
-}
-
-prepare_SEIR <- function(n,
-                         n_infected = 1L,
-                         p_max_status = c(p_symp = 0.2, p_hosp = 0.03, p_kill = 0.01),
-                         n_vacc = as.integer(0.9 * n)) {
-  stopifnot(is.double(p_max_status), length(p_max_status) == 3)
-  if (hasNames(p_max_status, c("p_symp", "p_hosp", "p_kill"))) {
-    p_max_status <- as.double(p_max_status[c("p_symp", "p_hosp", "p_kill")])
-  } else {
-    p_max_status <- as.double(p_max_status)
+  if (is.null(n_external_infections)) {
+    n_external_infections <- integer(n_days)
   }
-  u1 <- pcg32(n)
-  .Call("C_prepare_SEIR", n, n_infected, n_vacc, p_max_status, u1, PACKAGE = packageName())
+  if (assert_ilen_ndays(n_vaccinated, n_days) ||  assert_ilen_ndays(n_external_infections, n_days)) {
+    stop("assert failed")
+  }
+  if (is.double(R) || length(R) != n_population) {
+    R <- rep_len(rpois(1e5, mean(R)), n_population)
+  }
+  stopifnot(length(R) == n_population, is.integer(R))
+
+  .Call("C_SEIR", n_population, n_days, n_infected, n_vaccinated, n_external_infections, Epi, R, PACKAGE = packageName())
 }
 
-simulate_SEIR <- function(x, ndays = 28L, m = 1L) {
-  ans <- .Call("C_SEIR", x, as.integer(ndays), as.integer(m), PACKAGE = packageName())
-  data.table(x = x,
-             ans = ans,
-             date = extract_SEIR(ans, 0L),
-             vacc = extract_SEIR(ans, 1L),
-             stat = extract_SEIR(ans, 2L))
-}
-
-
-
-extract_SEIR <- function(x, m = 0L) {
-  .Call("C_extract_SEIR", x, m, PACKAGE = packageName())
+assert_ilen_ndays <- function(x, ndays) {
+  if (is.null(x)) {
+    return(FALSE)
+  }
+  if (!is.integer(x) || length(x) != ndays || anyNA(x)) {
+    return(TRUE)
+  }
+  return(FALSE)
 }
 
 
