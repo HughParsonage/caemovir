@@ -43,7 +43,7 @@ simulate_SEIR <- function(R = 5.5, n_days = 28L, n_population = 5e6L, n_infected
     R <- rep_len(rpois(1e5, mean(R)), n_population)
   }
   stopifnot(length(R) == n_population, is.integer(R))
-
+  ResetRNG()
   .Call("C_SEIR", n_population, n_days, n_infected, n_vaccinated, n_external_infections, Epi, R, nThread, PACKAGE = packageName())
 }
 

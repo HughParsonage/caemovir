@@ -37,7 +37,7 @@ unsigned int r2r(double r) {
 
 void populateRandom_pcg32(int * answer, int size, int state, int inc) {
   pcg32_random_t key = {
-    .state = state,
+    .state = rng_state,
     .inc = inc};
   // pcg32_random_t key = {
   //   .state = 324,

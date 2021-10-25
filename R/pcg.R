@@ -7,3 +7,7 @@ pcg32 <- function(n) {
   .Call("C_trand_pcg", n, R, PACKAGE = packageName())
 }
 
+ResetRNG <- function() {
+  # Used to link R's to C's
+  .Call("CResetRNG", sample.int(.Machine$integer.max, size = 1L), PACKAGE = packageName())
+}

@@ -13,6 +13,7 @@ extern SEXP C_sample_fixed_TRUE(SEXP, SEXP);
 extern SEXP C_SEIR(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP C_trand_pcg(SEXP, SEXP);
 extern SEXP Collapse(SEXP);
+extern SEXP CResetRNG(SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
     {"C_caemovir",          (DL_FUNC) &C_caemovir,          2},
@@ -20,6 +21,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"C_SEIR",              (DL_FUNC) &C_SEIR,              8},
     {"C_trand_pcg",         (DL_FUNC) &C_trand_pcg,         2},
     {"Collapse",            (DL_FUNC) &Collapse,            1},
+    {"CResetRNG",           (DL_FUNC) &CResetRNG,           1},
     {NULL, NULL, 0}
 };
 

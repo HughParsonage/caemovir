@@ -203,7 +203,11 @@ void increase_vaccination(Person * PP, int extra_v, unsigned int N) {
 
 void do_seir(Person * PP, int N, int d, int * rand, unsigned char * crand, unsigned int x_infections, int nthreads) {
   int r0 = rand[1];
-  if (d <= 2)  populateRandom_pcg32(rand, N, r0, 4444);
+  if (d & 7u) {
+
+  } else {
+    populateRandom_pcg32(rand, N, r0, 3333);
+  }
   uint64_t new_infections = sum_transmissions(PP, N, d) + x_infections;
   if ((new_infections - 1u) >= N) {
     // unlikely
