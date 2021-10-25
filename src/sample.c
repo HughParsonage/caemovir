@@ -1,5 +1,15 @@
 #include "caemovir.h"
 
+// equivalent to word % p;
+// https://github.com/lemire/fastrange/blob/master/fastrange.h
+uint32_t fastrange32(uint32_t word, uint32_t p) {
+  return (uint32_t)(((uint64_t)word * (uint64_t)p) >> 32);
+}
+
+uint32_t sample_inrange(uint32_t N) {
+  return fastrange32(rand_pcg(), N);
+}
+
 //' @noRd
 //' @param x The array from which a sample is to be taken
 //' @param n The length of the array (the number of available choices)

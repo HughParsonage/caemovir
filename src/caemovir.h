@@ -18,13 +18,20 @@ int maxiy(const int * x, int n, int y);
 
 // pcg_hash
 unsigned int rand_pcg();
+unsigned int next_rand(unsigned int r);
 void populateRandom_pcg32(int * answer, int size, int state, int inc);
+
+// omp_diagnose.c
+int as_nThread(SEXP x);
 
 // ScalarLength.c
 SEXP ScalarLength(R_xlen_t N);
 R_xlen_t asLength(SEXP NN);
 
+
 // sample.c
+uint32_t fastrange32(uint32_t word, uint32_t p);
+uint32_t sample_inrange(uint32_t N);
 void csample_fixed_TRUE(unsigned char * xp, unsigned int n, unsigned int nTRUE);
 
 // swap.c

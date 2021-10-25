@@ -11,6 +11,12 @@
 #' @param p_symp,p_hosp,p_icu,p_death The proportion of infected individuals
 #' who develop symptoms, enter hospital, icu, or die.
 #'
+#' @param nThread Number of threads to use.
+#'
+#' @examples
+#' sapply(seq(3, 9, 0.25), simulate_SEIR)
+#'
+#'
 #' @export
 
 simulate_SEIR <- function(R = 5.5, n_days = 28L, n_population = 5e6L, n_infected = 1000L,
@@ -19,7 +25,8 @@ simulate_SEIR <- function(R = 5.5, n_days = 28L, n_population = 5e6L, n_infected
                           p_symp = 0.2,
                           p_hosp = 0.05,
                           p_icu = 0.02,
-                          p_death = 0.01) {
+                          p_death = 0.01,
+                          nThread = getOption("caemovir.nThread", 1L)) {
   Epi <- c(p_symp, p_hosp, p_icu, p_death)
   Sizes <- c(n_population, n_infected, n_days)
   stopifnot(is.integer(n_days), length(n_days) == 1L, !is.na(n_days), n_days < 255L)
@@ -37,7 +44,7 @@ simulate_SEIR <- function(R = 5.5, n_days = 28L, n_population = 5e6L, n_infected
   }
   stopifnot(length(R) == n_population, is.integer(R))
 
-  .Call("C_SEIR", n_population, n_days, n_infected, n_vaccinated, n_external_infections, Epi, R, PACKAGE = packageName())
+  .Call("C_SEIR", n_population, n_days, n_infected, n_vaccinated, n_external_infections, Epi, R, nThread, PACKAGE = packageName())
 }
 
 assert_ilen_ndays <- function(x, ndays) {

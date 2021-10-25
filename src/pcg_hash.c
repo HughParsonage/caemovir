@@ -18,6 +18,12 @@ unsigned int rand_pcg() {
   return (word >> 22u) ^ word;
 }
 
+unsigned int next_rand(unsigned int r) {
+  r = r * 747796405u + 2891336453u;
+  unsigned int word = ((r >> ((r >> 28u) + 4u)) ^ r) * 277803737u;
+  return (word >> 22u) ^ word;
+}
+
 // given a uniform random variable p, and an unsigned int
 // a, return TRUE on realization (concretetly when p < U(0, 1))
 bool unif_p2b(double p, unsigned int a) {
@@ -51,6 +57,7 @@ SEXP C_trand_pcg(SEXP NN, SEXP RR) {
   SEXP ans = PROTECT(allocVector(INTSXP, N));
   int * ansp = INTEGER(ans);
   populateRandom_pcg32(ansp, N, r1, r2);
+
   UNPROTECT(1);
   return ans;
 }
