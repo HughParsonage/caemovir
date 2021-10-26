@@ -11,6 +11,12 @@
 #' @param p_symp,p_hosp,p_icu,p_death The proportion of infected individuals
 #' who develop symptoms, enter hospital, icu, or die.
 #'
+#' @param returner An integer.
+#' \describe{
+#' \item{\code{10}}{Number ever infected.}
+#' \item{\code{11}}{Number ever hospitalized.}
+#' }
+#'
 #' @param nThread Number of threads to use.
 #'
 #' @examples
@@ -26,6 +32,7 @@ simulate_SEIR <- function(R = 5.5, n_days = 28L, n_population = 5e6L, n_infected
                           p_hosp = 0.05,
                           p_icu = 0.02,
                           p_death = 0.01,
+                          returner = 11L,
                           nThread = getOption("caemovir.nThread", 1L)) {
   Epi <- c(p_symp, p_hosp, p_icu, p_death)
   Sizes <- c(n_population, n_infected, n_days)
@@ -44,7 +51,17 @@ simulate_SEIR <- function(R = 5.5, n_days = 28L, n_population = 5e6L, n_infected
   }
   stopifnot(length(R) == n_population, is.integer(R))
   ResetRNG()
-  .Call("C_SEIR", n_population, n_days, n_infected, n_vaccinated, n_external_infections, Epi, R, nThread, PACKAGE = packageName())
+  .Call("C_SEIR",
+        n_population,
+        n_days,
+        n_infected,
+        n_vaccinated,
+        n_external_infections,
+        Epi,
+        R,
+        nThread,
+        as.integer(returner),
+        PACKAGE = packageName())
 }
 
 assert_ilen_ndays <- function(x, ndays) {

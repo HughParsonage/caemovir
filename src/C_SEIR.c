@@ -25,7 +25,7 @@ typedef struct {
   bool ever_die : 1;
   unsigned int transmit_potential : 5;
   unsigned int transmit_day : 3;
-  unsigned char date;
+  unsigned int date : 8;
 } Person;
 
 typedef struct {
@@ -238,6 +238,7 @@ SEXP C_SEIR(SEXP NN,
             SEXP nnExternalInfections,
             SEXP EEpi,
             SEXP RR,
+            SEXP Returner,
             SEXP nThread) {
   if (!isInteger(NN) || !isInteger(NDays) || !isReal(EEpi)) {
     error("Wrong types.");
@@ -264,6 +265,7 @@ SEXP C_SEIR(SEXP NN,
     error("length(Epi) != 4");
   }
   int nthreads = as_nThread(nThread);
+  const int returner = asInteger(Returner);
 
   const double p_symp = ifbw01(epi[0], 0.20);
   const double p_hosp = ifbw01(epi[1], 0.03);
@@ -305,12 +307,23 @@ SEXP C_SEIR(SEXP NN,
     }
     do_seir(pp, N, d, rand, crand, nExternalInfections[d], nthreads);
   }
-  //int n_ever_infected = sum_ever_infected(pp, N);
-  int n_ever_hospitalized = sum_ever_hospitalized(pp, N, nthreads);
   free(crand);
   free(rand);
+  switch(returner) {
+  case 10: {
+    int n_ever_infected = sum_ever_infected(pp, N, nthreads);
+    free(pp);
+    return ScalarInteger(n_ever_infected);
+  }
+  case 11: {
+    int n_ever_hospitalized = sum_ever_hospitalized(pp, N, nthreads);
+    free(pp);
+    return ScalarInteger(n_ever_hospitalized);
+  }
+  }
+
   free(pp);
-  return ScalarInteger(n_ever_hospitalized);
+  return R_NilValue;
 
 }
 

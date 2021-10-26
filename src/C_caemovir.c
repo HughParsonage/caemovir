@@ -1,227 +1,277 @@
 #include "caemovir.h"
 
+#define MAX_N_DAYS 250
 #define MAX_HSIZE 8
 #define MAX_HSIZD 7
+#define MAX_WSIZE 51
+
 #define RANDOM_LEN 16777216
 #define RANDOM_LEM 16777215
 
 typedef struct {
-  int status : 4;
-  unsigned char date;
-  int hh;
-  int ww;
-  int ss;
-  unsigned char resistance;
+  unsigned int infected : 1;
+  unsigned int maybe_hospital : 1;
+  unsigned int maybe_icu : 1;
+  unsigned int maybe_die : 1;
+  unsigned int ever_infected : 1;
+  unsigned int ever_hospital : 1;
+  unsigned int ever_icu : 1;
+  unsigned int ever_die : 1;
+  unsigned int transmit_potential : 5;
+  unsigned int transmit_day : 3;
+  unsigned int date : 8;
+  unsigned int vaccine : 2;
+  unsigned int resistance : 6;
+} Health;
+
+unsigned int H2u32(Health H) {
+  unsigned int o = 0;
+  o += H.infected;
+  o <<= 1;
+  o += H.maybe_hospital;
+  o <<= 1;
+  o += H.maybe_icu;
+  o <<= 1;
+  o += H.maybe_die;
+  o <<= 1;
+  o += H.ever_infected;
+  o <<= 1;
+  o += H.ever_hospital;
+  o <<= 1;
+  o += H.ever_icu;
+  o <<= 1;
+  o += H.ever_die;
+  o <<= 5;
+  o += H.transmit_potential;
+  o <<= 3;
+  o += H.transmit_day;
+  o <<= 8;
+  o += H.date;
+  o <<= 2;
+  o += H.vaccine;
+  o <<= 6;
+  o += H.resistance;
+  return o;
+}
+
+Health u2H(unsigned int x) {
+  Health H;
+  H.resistance = x & 63;
+  x >>= 6;
+  H.vaccine = x & 3;
+  x >>= 2;
+  H.date = x & 255;
+  x >>= 8;
+  H.transmit_day = x & 7;
+  x >>= 3;
+  H.transmit_potential = x & 31;
+  x >>= 5;
+  H.ever_die = x & 1;
+  x >>= 1;
+  H.ever_icu = x & 1;
+  x >>= 1;
+  H.ever_hospital = x & 1;
+  x >>= 1;
+  H.ever_infected = x & 1;
+  x >>= 1;
+  H.maybe_die = x & 1;
+  x >>= 1;
+  H.maybe_icu = x & 1;
+  x >>= 1;
+  H.maybe_hospital = x & 1;
+  x >>= 1;
+  H.infected = x & 1;
+  return H;
+}
+
+SEXP C_test_roundtrip_H2U2H(SEXP xx) {
+  unsigned int x = asInteger(xx);
+  return ScalarInteger(H2u32(u2H(x)));
+}
+
+typedef struct {
+  Health H;
+  unsigned int h;
+  unsigned int w;
 } Person;
 
 typedef struct {
-  int hh;
-  int pp[MAX_HSIZE];
-  unsigned char rr_pp[MAX_HSIZE];
-  unsigned char dd_pp[MAX_HSIZE];
-  int size : 3;
+  unsigned int n_infected;
+  unsigned int w_size;
+  unsigned int pp[MAX_WSIZE]; // number of workers
+} Workplace;
+
+typedef struct {
+  unsigned int n_infected;
+  unsigned int h_size;
+  unsigned int pp[MAX_HSIZE];
 } House;
 
 typedef struct {
-  int ww;
-  int * pp;
-  int size;
-} Work;
+  unsigned int q_work;
+  unsigned int q_home;
+  unsigned int q_symp;
+  unsigned int q_hosp;
+  unsigned int q_icu;
+  unsigned int q_kill;
+} Epi;
 
-
-
-
-void enhouse(House * ans,
-             const int * pp,
-             const int * hh,
-             const unsigned char * rr,
-             int n,
-             int n_houses) {
-
-  int i_house = 0;
-  // first house
-  ans[0].hh = 0;
-  ans[0].pp[0] = pp[0];
-  ans[0].rr_pp[0] = rr[0];
-  ans[0].dd_pp[0] = 0;
-  int j = 1;
-
-  for (int i = 1; i < n; ++i) {
-    if (hh[i - 1] != hh[i]) {
-      // new house
-      i_house++;
-      ans[i_house].size = 0;
-      j = 0;
-    }
-    ans[i_house].hh = i_house;
-    ans[i_house].pp[j] = pp[i];
-    ans[i_house].rr_pp[j] = rr[i];
-    ans[i_house].dd_pp[j] = 0;
-    ans[i_house].size++;
-    ++j;
-  }
-}
-
-House house_of(int p, const int * pp, const int * hh, House * Houses) {
-  int hi =  hh[p - 1];
-  return Houses[hi];
-}
-
-unsigned int d2uc(double p) {
-  unsigned int pi = p * 256;
-  return pi & 255;
-}
-
-// given a probability in (0, 1) and an array of the given size,
-// returns yes/no
-void h_q2array(int pp[MAX_HSIZE], int size, double q, const unsigned int random[RANDOM_LEN], unsigned int rj) {
-  unsigned int p = d2uc(q);
-  for (int j = 0; j < size; ++j) {
-    unsigned int r = random[(rj + j) & RANDOM_LEM] & 255;
-    if (r <= p) {
-      pp[j] = 1;
-    }
-  }
-
-
-
-}
-
-bool is_susceptible(unsigned char q, unsigned char resistance, unsigned char diagnosis_date, unsigned char d) {
-  return d < diagnosis_date && q > resistance;
+unsigned int P2u(Person P) {
+  return 0;
 }
 
 
-void infect_house(House H,
-                  unsigned char * ans,
-                  int new_infections,
-                  unsigned char d) {
+// static void populate2(Person * pp,
+//                       unsigned int N,
+//                       const int * hidp,
+//                       const int * widp,
+//                       Epi E) {
+//   int n_workplaces = Maxi(widp, N);
+//
+//   Workplace * workplaces = malloc(sizeof(Workplace) *)
+//
+//
+//
+//   for (int i = 0; i < N; ++i) {
+//     Person P;
+//
+//     Health H;
+//
+//     Contacts C;
+//     unsigned int hh[MAX_HSIZE] = {0};
+//     unsigned int ww[MAX_HSIZE] = {0};
+//
+//   }
+// }
 
-  if (new_infections == 0) {
+static void populate_houses(House * hh, int n_houses,
+                     const int * hidp, int N) {
+  unsigned int * lhs = malloc(sizeof(int) * N);
+  unsigned int * rhs = malloc(sizeof(int) * N);
+  if (lhs == NULL || rhs == NULL) {
+    free(lhs);
     return;
   }
-  // which members will be the new infections?
-  //
-  for (int j = 0; j < new_infections; ++j) {
-    unsigned int rj = rand_pcg();
-    int p = H.pp[rj & MAX_HSIZD];
-    unsigned char resist = H.rr_pp[rj & MAX_HSIZD];
-    unsigned char q = rj & 255;
-    if (is_susceptible(q, resist, ans[p], d)) {
-      ans[p] = d;
+  lhs[0] = 0;
+  rhs[0] = 1;
+  int j = 0;
+  for (int i = 1; i < N; ++i) {
+    if (hidp[i - 1] != hidp[i]) {
+      ++j;
+      lhs[j] = i;
+    }
+    rhs[j] = i + 1;
+  }
+
+  for (int h = 0; h < n_houses; ++h) {
+    int h_size = rhs[h] - lhs[h];
+    hh[h].h_size = h_size;
+    hh[h].n_infected = 0;
+    for (int j = 0; j < MAX_HSIZE; ++j) {
+      hh[h].pp[j] = j < h_size ? (lhs[h] + j + 1) : 0;
     }
   }
+
+  free(lhs);
+  free(rhs);
 }
 
-static const unsigned int R16[16] = {0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1};
-static const unsigned int SEQ8[8] = {0, 1, 2, 3, 4, 5, 6, 7};
-
-unsigned int rar(void) {
-  unsigned int p = rand_pcg();
-  return R16[p & 15];
-}
-
-
-
-void sample_house(int pp[MAX_HSIZE]) {
-#if MAX_HSIZE == 8
-  memcpy(pp, SEQ8, sizeof(SEQ8));
-#else
-  for (int j = 0; j < MAX_HSIZE; ++j) {
-    pp[j] = j;
-  }
-#endif
-  for (int j = MAX_HSIZD; j > 0; --j) {
-    int i = rand_pcg() % MAX_HSIZE;
-    swap(&pp[i], &pp[j]);
-  }
-}
-
-
-SEXP C_caemovir(SEXP daysToSimulate,
-                SEXP PatientsZero,
-                SEXP Resistance,
-                SEXP PP,
-                SEXP HH,
-                SEXP WW,
-                SEXP R0,
-                SEXP Random) {
-  const int n_persons = length(PP);
-  if (length(Resistance) != n_persons) {
-    error("length(Resistance) != n_persons");
-  }
-  int N = length(PP);
-  const int * patientsZerop = INTEGER(PatientsZero);
-  const unsigned char * resistance = RAW(Resistance);
-  const int * pp = INTEGER(PP);
-  const int * hh = INTEGER(HH);
-  const int * ww = INTEGER(WW);
-  const int days_to_simulate = asInteger(daysToSimulate);
-  if (isntSorted(hh, N)) {
-    error("hh not sorted at position %d", isntSorted(hh, N));
-  }
-  if (hh[0] != 0) {
-    error("First element of hh is %d but must be zero (i.e. hh must bezero-indexed)", hh[0]);
-  }
-  const double r0 = asReal(R0);
-  const unsigned int r0u = UINT_MAX * (r0 - 1);
-
-  int n_infected = length(PatientsZero);
-  unsigned int * infectedi = malloc(sizeof(int) * n_persons);
-  if (infectedi == NULL) {
-    error("infectedi malloc unable."); // # nocov
-  }
-  for (int i = 0; i < n_persons; ++i) {
-    infectedi[i] = i < n_infected ? patientsZerop[i] : 0;
-  }
-  int n_houses = maxiy(hh, N, hh[N - 1]) + 1;
-  House * Houses = malloc(sizeof(House) * n_houses);
-  if (Houses == NULL) {
-    free(infectedi);
-    error("malloc Houses failure."); // # nocov
-  }
-  enhouse(Houses, pp, hh, resistance, N, n_houses);
-  unsigned int * infectedh = calloc(n_houses, sizeof(int));
-  if (infectedh == NULL) {
-    free(infectedi);
-    free(infectedh);
-    error("malloc infectedh failure."); // # nocov
-  }
-
-  SEXP ans = PROTECT(allocVector(RAWSXP, N));
-  unsigned char * ansp = RAW(ans);
-  memset(ansp, 0, N);
-
-  for (int d = 0; d < days_to_simulate; ++d) {
-    int n_houses_infected_d = 0;
-    for (int pz = 0; pz < n_infected; ++pz) {
-      // First which houses are infected?
-      int p = infectedi[pz];
-      int h_pz = hh[p];
-      if (infectedh[h_pz] == 0) {
-        // Record the location of the next
-        infectedh[n_houses_infected_d] = h_pz;
-        n_houses_infected_d++;
-      }
-      // Then which workplaces are infected
-
+static void populate_workplaces(Workplace * ww, int n_workplaces,
+                                const int * widp, int N) {
+  for (int j = 0; j < n_workplaces; ++j) {
+    Workplace wj = ww[j];
+    wj.n_infected = 0;
+    for (int p = 0; p < MAX_WSIZE; ++p) {
+      wj.pp[p] = 0;
     }
-    for (int hz = 0; hz < n_houses_infected_d; ++hz) {
-      int hh = infectedh[hz];
-      int new_infections = rar();
-      if (!new_infections) {
-        continue;
-      }
-      int pp_hz[MAX_HSIZE] = {0};
-      sample_house(pp_hz);
-      House H = Houses[hh];
-      infect_house(H, ansp, new_infections, d);
+    wj.w_size = 0;
+  }
+
+  for (int i = 0; i < N; ++i) {
+    unsigned int wi = widp[i];
+    --wi;
+    if (wi >= n_workplaces) {
+      continue;
     }
+    Workplace wj = ww[wi];
+    unsigned int size = wj.w_size;
+    if (size >= MAX_WSIZE) continue;
+    wj.pp[size] = i + 1;
+    wj.w_size++;
+    ww[wi] = wj;
+  }
+}
+
+static void populate_persons(Person * pp, int N,
+                             const int * hidp,
+                             const int * widp,
+                             Epi E) {
+  for (int i = 0; i < N; ++i) {
+    Person P;
+    Health H;
+    int hh_i = hidp[i] - 1;
+
 
   }
-  free(infectedi);
-  free(infectedh);
-  free(Houses);
-  UNPROTECT(1);
-  return ans;
 }
+
+
+SEXP C_caemovir(SEXP nDays,
+                SEXP hid,
+                SEXP wid,
+                SEXP Age,
+                SEXP Policy,
+                SEXP EEpi,
+                SEXP Returner) {
+  const int n_days = asInteger(nDays);
+  if (n_days > MAX_N_DAYS) {
+    error("n_days = %d but MAX_N_DAYS = %d", n_days, MAX_N_DAYS);
+  }
+  assertEquiInt(hid, wid);
+  const int * hidp = INTEGER(hid);
+  const int * widp = INTEGER(wid);
+  unsigned int N = length(hid);
+
+  if (isntSorted(hidp, N)) {
+    error("hid was not sorted."); // # nocov
+  }
+  if (hidp[0] != 1) {
+    error("hidp[0] = %d but must be 1.", hidp[0]);
+  }
+
+  int n_houses = hidp[N - 1];
+  int n_workplaces = Maxi(widp, N);
+  if (!check_seq(widp, N, n_workplaces)) {
+    error("n_workers = %d, ERR_NO: %d", n_workplaces, check_seq(widp, N, n_workplaces));
+  }
+  const int returner = asInteger(Returner);
+  Person * pp = malloc(sizeof(Person) * N);
+  House * hh = malloc(sizeof(House) * n_houses);
+  Workplace * ww = malloc(sizeof(Workplace) * n_workplaces);
+  unsigned int * rand = malloc(sizeof(int) * N);
+
+  if (pp == NULL || ww == NULL || hh == NULL || rand == NULL) {
+    free(pp);
+    free(ww);
+    free(hh);
+    free(rand);
+    error("Unable to allocate.");
+  }
+
+  populate_houses(hh, n_houses, hidp, N);
+  populate_workplaces(ww, n_workplaces, widp, N);
+  // populate_persons(pp, N, E);
+
+  for (int d = 0; d < n_days; ++d) {
+    // do_caemovir(pp, hh, ww, N, )
+  }
+
+
+
+  free(pp);
+  free(ww);
+  free(hh);
+  free(rand);
+  return R_NilValue;
+}
+

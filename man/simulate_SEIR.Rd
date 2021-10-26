@@ -15,6 +15,7 @@ simulate_SEIR(
   p_hosp = 0.05,
   p_icu = 0.02,
   p_death = 0.01,
+  returner = 11L,
   nThread = getOption("caemovir.nThread", 1L)
 )
 }
@@ -36,6 +37,12 @@ number of sporadic infections to introduce.}
 
 \item{p_symp, p_hosp, p_icu, p_death}{The proportion of infected individuals
 who develop symptoms, enter hospital, icu, or die.}
+
+\item{returner}{An integer.
+\describe{
+\item{\code{10}}{Number ever infected.}
+\item{\code{11}}{Number ever hospitalized.}
+}}
 
 \item{nThread}{Number of threads to use.}
 }
