@@ -23,3 +23,14 @@ int maxiy(const int * x, int n, int y) {
   }
   return y;
 }
+
+int Maxi(const int * x, int N) {
+  int o = x[N - 1];
+  for (int i = 0; i < N - 1; ++i) {
+    if (x[i] > o) {
+      o = x[i];
+    }
+  }
+  return o;
+}
+
