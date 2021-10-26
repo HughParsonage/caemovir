@@ -7,7 +7,7 @@
 
 #define INFECTIOUS_PERIOD 8
 
-static inline double ifbw01(double x, double y) {
+double ifbw01(double x, double y) {
   return (x >= 0 && x <= 1) ? x : y;
 }
 

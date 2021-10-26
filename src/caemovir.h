@@ -13,12 +13,19 @@
 #include <math.h>
 #include <ctype.h>
 
+// C_SEIR.c
+double ifbw01(double x, double y);
+
 // erorr.c
 void assertEquiInt(SEXP x, SEXP y);
 
 int isntSorted(const int * x, int n);
 int maxiy(const int * x, int n, int y);
 int Maxi(const int * x, int N);
+
+// getListElement
+SEXP getListElement(SEXP list, const char *str);
+unsigned int list2q(SEXP L, const char * str, double default_p);
 
 // pcg_hash
 unsigned int rand_pcg();

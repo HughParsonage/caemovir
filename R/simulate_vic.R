@@ -25,7 +25,6 @@ simulate_vic <- function(days_to_simulate = 28,
   wid <- myaus$wid
   Age <- myaus$Age
   Policy <- NULL
-  EEpi <- NULL
   Returner <- 10L
   .Call("C_caemovir",
         days_to_simulate,
@@ -33,7 +32,7 @@ simulate_vic <- function(days_to_simulate = 28,
         wid,
         Age,
         Policy,
-        EEpi,
+        EpiPars,
         Returner,
         PACKAGE = packageName())
 }

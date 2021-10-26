@@ -210,9 +210,23 @@ static void populate_persons(Person * pp, int N,
     Person P;
     Health H;
     int hh_i = hidp[i] - 1;
-
-
+    P.age = agep[i];
+    P.h = hidp[i];
+    P.w = widp[i];
   }
+}
+
+Epi list2Epi(SEXP L) {
+  if (TYPEOF(L) != VECSXP) {
+    error("Epi was type '%s' but must be type list.", type2char(TYPEOF(L)));
+  }
+  Epi E;
+  E.q_symp = list2q(L, "p_symp", 0.20);
+  E.q_hosp = list2q(L, "p_hosp", 0.03);
+  E.q_icu =  list2q(L, "p_icu", 0.015);
+  E.q_kill = list2q(L, "p_kill", 0.009);
+  E.q_home = (unsigned int)(UINT_MAX * 0.1);
+  return E;
 }
 
 
@@ -245,7 +259,12 @@ SEXP C_caemovir(SEXP nDays,
   if (!check_seq(widp, N, n_workplaces)) {
     error("n_workers = %d, ERR_NO: %d", n_workplaces, check_seq(widp, N, n_workplaces));
   }
+  Epi E = list2Epi(EEpi);
+
   const int returner = asInteger(Returner);
+  if (returner != 10) {
+    error("returner != 10 not yet supported.");
+  }
   Person * pp = malloc(sizeof(Person) * N);
   House * hh = malloc(sizeof(House) * n_houses);
   Workplace * ww = malloc(sizeof(Workplace) * n_workplaces);
@@ -261,7 +280,7 @@ SEXP C_caemovir(SEXP nDays,
 
   populate_houses(hh, n_houses, hidp, N);
   populate_workplaces(ww, n_workplaces, widp, N);
-  // populate_persons(pp, N, E);
+  populate_persons(pp, N, hidp, widp, agep, E);
 
   for (int d = 0; d < n_days; ++d) {
     // do_caemovir(pp, hh, ww, N, )
