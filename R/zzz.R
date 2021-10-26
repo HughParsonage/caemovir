@@ -6,7 +6,7 @@
     # prevInstallTime <- read_dataEnv("__TIME__")
     # if (!identical(InstallTime(), prevInstallTime)) {
     #   e <- new.env()
-    #   options("caemovir_dataEnv" = e)
+    #   options("caemovir.dataEnv" = e)
     #   assign("__TIME__", InstallTime(), envir = e)
     # }
   } else {

@@ -13,4 +13,6 @@ Suggests: tinytest
 RoxygenNote: 7.1.1
 Imports: 
     utils,
-    data.table
+    data.table,
+    stats,
+    fst

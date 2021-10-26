@@ -93,6 +93,7 @@ typedef struct {
   Health H;
   unsigned int h;
   unsigned int w;
+  unsigned int age;
 } Person;
 
 typedef struct {
@@ -116,9 +117,7 @@ typedef struct {
   unsigned int q_kill;
 } Epi;
 
-unsigned int P2u(Person P) {
-  return 0;
-}
+
 
 
 // static void populate2(Person * pp,
@@ -205,6 +204,7 @@ static void populate_workplaces(Workplace * ww, int n_workplaces,
 static void populate_persons(Person * pp, int N,
                              const int * hidp,
                              const int * widp,
+                             const int * agep,
                              Epi E) {
   for (int i = 0; i < N; ++i) {
     Person P;
@@ -230,6 +230,7 @@ SEXP C_caemovir(SEXP nDays,
   assertEquiInt(hid, wid);
   const int * hidp = INTEGER(hid);
   const int * widp = INTEGER(wid);
+  const int * agep = INTEGER(Age);
   unsigned int N = length(hid);
 
   if (isntSorted(hidp, N)) {

@@ -1,7 +1,7 @@
 
 
 Exists <- function(nom) {
-  e <- getOption("caemovir_dataEnv")
+  e <- getOption("caemovir.dataEnv")
   if (is.null(e)) {
     return(FALSE)
   }
@@ -9,14 +9,14 @@ Exists <- function(nom) {
 }
 
 Get <- function(nom) {
-  if (Exists(Nom)) {
-    get(nom, envir = getOption("caemovir_dataEnv"), inherits = FALSE)
+  if (Exists(nom)) {
+    get(nom, envir = getOption("caemovir.dataEnv"), inherits = FALSE)
   }
 }
 
 Assign <- function(Nom) {
   nom <- as.character(substitute(Nom))
-  assign(nom, Nom, envir = getOption("caemovir_dataEnv"))
+  assign(nom, Nom, envir = getOption("caemovir.dataEnv"))
 }
 
 
