@@ -17,3 +17,19 @@ sys_fst <- function(nom) {
                 winslash = "/")
 }
 
+linelist2vic <- function(linelist) {
+  stopifnot(is.data.table(linelist),
+            is.integer(DiagnosisDate <- linelist$DiagnosisDate),
+            is.integer(Classification <- linelist$Classification),
+            is.integer(Acquired <- linelist$Acquired),
+            is.integer(Severity <- linelist$Severity))
+  .Call("C_Encode_linelist2Health",
+        DiagnosisDate,
+        Classification,
+        Acquired,
+        Severity,
+        PACAKGE = packageName())
+
+}
+
+

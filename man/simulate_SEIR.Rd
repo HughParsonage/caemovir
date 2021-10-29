@@ -40,6 +40,7 @@ who develop symptoms, enter hospital, icu, or die.}
 
 \item{returner}{An integer.
 \describe{
+\item{\code{1}}{Raw vector of length \code{n_population}, the dates of infection.}
 \item{\code{10}}{Number ever infected.}
 \item{\code{11}}{Number ever hospitalized.}
 }}

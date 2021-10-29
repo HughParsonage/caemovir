@@ -67,7 +67,7 @@ void check_recovered(Person * P, int d) {
 
 
 static void scramble(Person * PP, int N, int state) {
-  int * rr = malloc(sizeof(int) * N);
+  unsigned int * rr = malloc(sizeof(int) * N);
   if (rr == NULL) {
     return;
   }
@@ -82,6 +82,17 @@ static void scramble(Person * PP, int N, int state) {
     PP[i] = P;
   }
   free(rr);
+}
+
+int sum_ever_infected(Person * P, int N, int nthreads) {
+  int o = 0;
+#if defined _OPENMP && _OPENMP >= 201511
+#pragma omp parallel for num_threads(nthreads) reduction(+:o)
+#endif
+  for (int i = 0; i < N; ++i) {
+    o += ever_infected(P[i]);
+  }
+  return o;
 }
 
 static void populate(Person * PP,
@@ -115,6 +126,8 @@ static void populate(Person * PP,
     PP[i] = P;
   }
   scramble(PP, N, r);
+
+
 }
 
 int count_infected(Person * P, int N, int nthreads) {
@@ -128,16 +141,7 @@ int count_infected(Person * P, int N, int nthreads) {
   return o;
 }
 
-int sum_ever_infected(Person * P, int N, int nthreads) {
-  int o = 0;
-#if defined _OPENMP && _OPENMP >= 201511
-#pragma omp parallel for num_threads(nthreads) reduction(+:o)
-#endif
-  for (int i = 0; i < N; ++i) {
-    o += ever_infected(P[i]);
-  }
-  return o;
-}
+
 
 int sum_ever_hospitalized(Person * P, int N, int nthreads) {
   int o = 0;
@@ -168,7 +172,7 @@ void infect_now(Person * P, int d) {
 }
 
 bool isnt_resistant(Person P, unsigned int r) {
-  if (is_infected(P)) {
+  if (ever_infected(P)) {
     return 0;
   }
   unsigned int v = P.vaccine;
@@ -201,13 +205,11 @@ void increase_vaccination(Person * PP, int extra_v, unsigned int N) {
 }
 
 
-void do_seir(Person * PP, int N, int d, int * rand, unsigned char * crand, unsigned int x_infections, int nthreads) {
-  int r0 = rand[1];
-  if (d & 7u) {
+void do_seir(Person * PP, int N, int d, unsigned int * rand, unsigned char * crand, unsigned int x_infections, int nthreads) {
+  populateRandom_pcg32(rand, N, rand_pcg(), 3333);
+  unsigned int r0 = rand[1];
 
-  } else {
-    populateRandom_pcg32(rand, N, r0, 3333);
-  }
+
   uint64_t new_infections = sum_transmissions(PP, N, d) + x_infections;
   if ((new_infections - 1u) >= N) {
     // unlikely
@@ -288,7 +290,7 @@ SEXP C_SEIR(SEXP NN,
   }
   populate(pp, N, r, n0_infected, n0_vaccinated, E);
 
-  int * rand = malloc(sizeof(int) * N);
+  unsigned int * rand = malloc(sizeof(int) * N);
   if (rand == NULL) {
     free(pp);
     error("rand not allocatable."); // # nocov
@@ -301,7 +303,7 @@ SEXP C_SEIR(SEXP NN,
     error("crand not allocatable."); // # nocov
   }
 
-  for (int d = 0; d < ndays; ++d) {
+  for (int d = 1; d < ndays; ++d) {
     if (d) {
       increase_vaccination(pp, nVaccinations[d] - nVaccinations[d - 1], N);
     }
@@ -310,16 +312,30 @@ SEXP C_SEIR(SEXP NN,
   free(crand);
   free(rand);
   switch(returner) {
+  case 1: {
+    // Dates
+    SEXP ans = PROTECT(allocVector(RAWSXP, N));
+    unsigned char * ansp = RAW(ans);
+    for (int i = 0; i < N; ++i) {
+      ansp[i] = pp[i].date;
+    }
+    free(pp);
+    UNPROTECT(1);
+    return ans;
+  }
+    break;
   case 10: {
     int n_ever_infected = sum_ever_infected(pp, N, nthreads);
     free(pp);
     return ScalarInteger(n_ever_infected);
   }
+    break;
   case 11: {
     int n_ever_hospitalized = sum_ever_hospitalized(pp, N, nthreads);
     free(pp);
     return ScalarInteger(n_ever_hospitalized);
   }
+    break;
   }
 
   free(pp);

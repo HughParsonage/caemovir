@@ -4,6 +4,8 @@
 #' policy parameters.
 #' @param EpiPars The epidemiological parameters. See \code{set_epipars()}.
 #'
+#' @param Init An integer vector indicating the health of each individual.
+#'
 #' @param showProgress,nThread Not yet used.
 #'
 #'
@@ -13,6 +15,7 @@
 simulate_vic <- function(days_to_simulate = 28,
                          PolicyPars = set_policypars(),
                          EpiPars = set_epipars(),
+                         Init = NULL,
                          showProgress = getOption("caemovir.showProgress", 1L),
                          nThread = getOption("caemovir.nThread", 1L)) {
   myaus <- default_vic()
@@ -23,11 +26,12 @@ simulate_vic <- function(days_to_simulate = 28,
   Policy <- NULL
   Returner <- 10L
   .Call("C_caemovir",
-        days_to_simulate,
+        as.integer(days_to_simulate),
         hid,
         wid,
         Age,
         Policy,
+        Init,
         EpiPars,
         Returner,
         PACKAGE = packageName())

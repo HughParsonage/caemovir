@@ -30,7 +30,7 @@ unsigned int list2q(SEXP L, const char * str, double default_p);
 // pcg_hash
 unsigned int rand_pcg();
 unsigned int next_rand(unsigned int r);
-void populateRandom_pcg32(int * answer, int size, int state, int inc);
+void populateRandom_pcg32(unsigned int * answer, int size, uint64_t state, uint64_t inc);
 
 // omp_diagnose.c
 int as_nThread(SEXP x);

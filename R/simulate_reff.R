@@ -13,6 +13,7 @@
 #'
 #' @param returner An integer.
 #' \describe{
+#' \item{\code{1}}{Raw vector of length \code{n_population}, the dates of infection.}
 #' \item{\code{10}}{Number ever infected.}
 #' \item{\code{11}}{Number ever hospitalized.}
 #' }
@@ -59,8 +60,8 @@ simulate_SEIR <- function(R = 5.5, n_days = 28L, n_population = 5e6L, n_infected
         n_external_infections,
         Epi,
         R,
-        nThread,
         as.integer(returner),
+        nThread,
         PACKAGE = packageName())
 }
 

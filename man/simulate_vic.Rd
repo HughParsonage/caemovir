@@ -8,6 +8,7 @@ simulate_vic(
   days_to_simulate = 28,
   PolicyPars = set_policypars(),
   EpiPars = set_epipars(),
+  Init = NULL,
   showProgress = getOption("caemovir.showProgress", 1L),
   nThread = getOption("caemovir.nThread", 1L)
 )
@@ -19,6 +20,8 @@ simulate_vic(
 policy parameters.}
 
 \item{EpiPars}{The epidemiological parameters. See \code{set_epipars()}.}
+
+\item{Init}{An integer vector indicating the health of each individual.}
 
 \item{showProgress, nThread}{Not yet used.}
 }
