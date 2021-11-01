@@ -1,6 +1,7 @@
 #'
 #' @import data.table
 #' @useDynLib caemovir, .registration=TRUE
+#' @importFrom fst fst.metadata
 #' @importFrom stats rpois
 #' @importFrom utils packageName
 #' @importFrom utils hasName

@@ -4,7 +4,7 @@
 unsigned int rng_state;
 unsigned int rng_states[8];
 
-inline uint64_t c32(uint32_t x, uint32_t y) {
+uint64_t c32(uint32_t x, uint32_t y) {
   // combine 32 to 64 bit
   return ((uint64_t)x) << 32 | y;
 }
