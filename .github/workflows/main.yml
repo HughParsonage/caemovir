@@ -47,7 +47,7 @@ jobs:
       - name: Install packages
         shell: bash
         run: |
-          Rdevel -q -e "install.packages(c('tinytest', 'hutils'))"
+          Rdevel -q -e "install.packages(c('tinytest', 'data.table', 'fst'))"
           Rdevel CMD build .
           Rdevel CMD INSTALL --install-tests *.tar.gz
           Rdevel -q -e "tinytest::test_all()"
